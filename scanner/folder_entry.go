@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/model"
 	"github.com/navidrome/navidrome/utils/chrono"
 )
@@ -23,7 +22,6 @@ func newFolderEntry(job *scanJob, id, path string, info model.FolderUpdateInfo) 
 		path:                path,
 		audioFiles:          make(map[string]fs.DirEntry),
 		imageFiles:          make(map[string]fs.DirEntry),
-		playlistFiles:       make(map[string]fs.DirEntry),
 		albumIDMap:          make(map[string]string),
 		updTime:             info.UpdatedAt,
 		prevHash:            info.Hash,
@@ -42,7 +40,6 @@ type folderEntry struct {
 	updTime         time.Time // from DB
 	audioFiles      map[string]fs.DirEntry
 	imageFiles      map[string]fs.DirEntry
-	playlistFiles   map[string]fs.DirEntry
 	numSubFolders   int
 	imagesUpdatedAt time.Time
 	prevHash        string // Previous hash from DB
@@ -58,7 +55,7 @@ type folderEntry struct {
 }
 
 func (f *folderEntry) hasNoFiles() bool {
-	return len(f.audioFiles) == 0 && len(f.imageFiles) == 0 && len(f.playlistFiles) == 0
+	return len(f.audioFiles) == 0 && len(f.imageFiles) == 0
 }
 
 func (f *folderEntry) isEmpty() bool {
@@ -94,9 +91,6 @@ func (f *folderEntry) imagesChanged() (changed, artistImage bool) {
 func (f *folderEntry) toFolder() *model.Folder {
 	folder := model.NewFolder(f.job.lib, f.path)
 	folder.NumAudioFiles = len(f.audioFiles)
-	if playlists.InPath(*folder) {
-		folder.NumPlaylists = len(f.playlistFiles)
-	}
 	folder.ImageFiles = slices.Collect(maps.Keys(f.imageFiles))
 	folder.ImagesUpdatedAt = f.imagesUpdatedAt
 	folder.Hash = f.hash()
@@ -107,20 +101,17 @@ func (f *folderEntry) hash() string {
 	h := md5.New()
 	_, _ = fmt.Fprintf(
 		h,
-		"%s:%d:%d:%s",
+		"%s:%d:%s",
 		f.modTime.UTC(),
-		len(f.playlistFiles), // redundant with the loop below, but dropping it re-hashes every folder
 		f.numSubFolders,
 		f.imagesUpdatedAt.UTC(),
 	)
 
-	// Sort the keys of audio, image and playlist files to ensure consistent hashing
+	// Sort the keys of audio and image files to ensure consistent hashing
 	audioKeys := slices.Collect(maps.Keys(f.audioFiles))
 	slices.Sort(audioKeys)
 	imageKeys := slices.Collect(maps.Keys(f.imageFiles))
 	slices.Sort(imageKeys)
-	playlistKeys := slices.Collect(maps.Keys(f.playlistFiles))
-	slices.Sort(playlistKeys)
 
 	// Include audio files with their size and modtime
 	for _, key := range audioKeys {
@@ -134,15 +125,6 @@ func (f *folderEntry) hash() string {
 	for _, key := range imageKeys {
 		_, _ = io.WriteString(h, key)
 		if info, err := f.imageFiles[key].Info(); err == nil {
-			_, _ = fmt.Fprintf(h, ":%d:%s", info.Size(), info.ModTime().UTC().String())
-		}
-	}
-
-	// Include playlist files, so a content edit is detected even when the folder's
-	// mtime is preserved (rsync -a) or the playlist is not the newest file.
-	for _, key := range playlistKeys {
-		_, _ = io.WriteString(h, key)
-		if info, err := f.playlistFiles[key].Info(); err == nil {
 			_, _ = fmt.Fprintf(h, ":%d:%s", info.Size(), info.ModTime().UTC().String())
 		}
 	}
