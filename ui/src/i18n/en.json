@@ -3,6 +3,10 @@
   "resources": {
     "song": {
       "name": "Song |||| Songs",
+      "lists": {
+        "all": "All",
+        "recentlyAdded": "Recently Added"
+      },
       "fields": {
         "albumArtist": "Album Artist",
         "duration": "Time",
@@ -679,6 +683,7 @@
       }
     },
     "albumList": "Albums",
+    "songList": "Songs",
     "playlists": "Playlists",
     "onlyFavourites": "Only show favourites",
     "sharedPlaylists": "Shared Playlists",

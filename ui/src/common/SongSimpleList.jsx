@@ -5,6 +5,7 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListItemText from '@material-ui/core/ListItemText'
+import Checkbox from '@material-ui/core/Checkbox'
 import { makeStyles } from '@material-ui/core/styles'
 import { sanitizeListRestProps } from 'react-admin'
 import { DurationField, SongContextMenu, RatingField } from './index'
@@ -73,6 +74,17 @@ export const SongSimpleList = ({
             data[id] && (
               <span key={id} onClick={() => dispatch(setTrack(data[id]))}>
                 <ListItem className={classes.listItem} button={true}>
+                  {hasBulkActions && (
+                    <ListItemIcon>
+                      <Checkbox
+                        checked={selectedIds.includes(id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onToggleItem(id, e)
+                        }}
+                      />
+                    </ListItemIcon>
+                  )}
                   <ListItemText
                     primary={
                       <div className={classes.title}>{data[id].title}</div>

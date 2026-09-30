@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Redirect, useLocation } from 'react-router-dom'
 import {
   AutocompleteArrayInput,
   Filter,
@@ -35,6 +36,7 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
 import { setTrack } from '../actions'
 import { SongListActions } from './SongListActions'
 import { AlbumLinkField } from './AlbumLinkField'
+import songLists from './songLists'
 import { SongBulkActions, QualityInfo, useSelectedFields } from '../common'
 import config from '../config'
 import ExpandInfoDialog from '../dialogs/ExpandInfoDialog'
@@ -135,9 +137,14 @@ const SongList = (props) => {
   const dispatch = useDispatch()
   const isXsmall = useMediaQuery((theme) => theme.breakpoints.down('xs'))
   const isDesktop = useMediaQuery((theme) => theme.breakpoints.up('md'))
+  const location = useLocation()
   useResourceRefresh('song')
 
-  const handleRowClick = (id, basePath, record) => {
+  const songListType = location.pathname
+    .replace(/^\/song/, '')
+    .replace(/^\//, '')
+
+  const handleRowClick = (_id, _basePath, record) => {
     dispatch(setTrack(record))
   }
 
@@ -207,6 +214,15 @@ const SongList = (props) => {
       'createdAt',
     ],
   })
+
+  // The menu links carry no params, so apply the list's defaults the first time it loads
+  if (!location.search && songLists[songListType]?.params) {
+    return (
+      <Redirect
+        to={`/song/${songListType}?${songLists[songListType].params}`}
+      />
+    )
+  }
 
   return (
     <>

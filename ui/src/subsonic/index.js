@@ -63,8 +63,14 @@ const unstar = (id) => httpClient(url('unstar', id))
 
 const setRating = (id, rating) => httpClient(url('setRating', id, { rating }))
 
-const download = (id, format = 'raw', bitrate = '0') =>
-  (window.location.href = baseUrl(url('download', id, { format, bitrate })))
+// Anchor click rather than location.href, so a batch of downloads is not collapsed into the last one
+const download = (id, format = 'raw', bitrate = '0') => {
+  const anchor = document.createElement('a')
+  anchor.href = baseUrl(url('download', id, { format, bitrate }))
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+}
 
 const startScan = (options) => httpClient(url('startScan', null, options))
 

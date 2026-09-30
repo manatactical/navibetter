@@ -5,9 +5,11 @@ import clsx from 'clsx'
 import { useTranslate, MenuItemLink, getResources } from 'react-admin'
 import ViewListIcon from '@material-ui/icons/ViewList'
 import AlbumIcon from '@material-ui/icons/Album'
+import MusicNoteIcon from '@material-ui/icons/MusicNote'
 import SubMenu from './SubMenu'
 import { humanize, pluralize } from 'inflection'
 import albumLists from '../album/albumLists'
+import songLists, { defaultSongList } from '../song/songLists'
 import PlaylistsSubMenu from './PlaylistsSubMenu'
 import LibrarySelector from '../common/LibrarySelector'
 import config from '../config'
@@ -56,6 +58,7 @@ const Menu = ({ dense = false }) => {
   // TODO State is not persisted in mobile when you close the sidebar menu. Move to redux?
   const [state, setState] = useState({
     menuAlbumList: true,
+    menuSongList: true,
     menuPlaylists: true,
     menuSharedPlaylists: true,
   })
@@ -102,6 +105,24 @@ const Menu = ({ dense = false }) => {
     )
   }
 
+  const renderSongMenuItemLink = (type, sl) => {
+    const address = type === defaultSongList ? '/song' : `/song/${type}`
+    const name = translate(`resources.song.lists.${type}`)
+
+    return (
+      <MenuItemLink
+        key={address}
+        to={address}
+        activeClassName={classes.active}
+        primaryText={name}
+        leftIcon={sl.icon || <ViewListIcon />}
+        sidebarIsOpen={open}
+        dense={dense}
+        exact
+      />
+    )
+  }
+
   const subItems = (subMenu) => (resource) =>
     resource.hasList && resource.options && resource.options.subMenu === subMenu
 
@@ -123,6 +144,18 @@ const Menu = ({ dense = false }) => {
       >
         {Object.keys(albumLists).map((type) =>
           renderAlbumMenuItemLink(type, albumLists[type]),
+        )}
+      </SubMenu>
+      <SubMenu
+        handleToggle={() => handleToggle('menuSongList')}
+        isOpen={state.menuSongList}
+        sidebarIsOpen={open}
+        name="menu.songList"
+        icon={<MusicNoteIcon />}
+        dense={dense}
+      >
+        {Object.keys(songLists).map((type) =>
+          renderSongMenuItemLink(type, songLists[type]),
         )}
       </SubMenu>
       {resources.filter(subItems(undefined)).map(renderResourceMenuItemLink)}
