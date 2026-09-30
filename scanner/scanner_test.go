@@ -17,9 +17,7 @@ import (
 	"github.com/navidrome/navidrome/conf"
 	"github.com/navidrome/navidrome/conf/configtest"
 	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/artwork"
 	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/core/storage/storagetest"
 	"github.com/navidrome/navidrome/db"
 	"github.com/navidrome/navidrome/log"
@@ -92,8 +90,7 @@ var _ = Describe("Scanner", Ordered, func() {
 		}
 		Expect(ds.User().Put(ctx, &adminUser)).To(Succeed())
 
-		s = scanner.New(ctx, ds, events.NoopBroker(),
-			playlists.NewPlaylists(ds, artwork.NewUploader(ds)), metrics.NewNoopInstance())
+		s = scanner.New(ctx, ds, events.NoopBroker(), metrics.NewNoopInstance())
 
 		lib = model.Library{ID: 1, Name: "Fake Library", Path: "fake:///music"}
 		Expect(ds.Library().Put(ctx, &lib)).To(Succeed())
@@ -1259,8 +1256,7 @@ var _ = Describe("Scanner", Ordered, func() {
 			}
 			createFS(files)
 			busyDS = &busyPersistDS{MockDataStore: ds}
-			s = scanner.New(ctx, busyDS, events.NoopBroker(),
-				playlists.NewPlaylists(busyDS, artwork.NewUploader(busyDS)), metrics.NewNoopInstance())
+			s = scanner.New(ctx, busyDS, events.NoopBroker(), metrics.NewNoopInstance())
 		})
 
 		It("gives up and stops walking the library when the database stays busy", func() {

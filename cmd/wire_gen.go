@@ -72,7 +72,7 @@ func CreateNativeAPIRouter(ctx context.Context) *nativeapi.Router {
 	insights := metrics.GetInstance(dataStore)
 	broker := events.GetBroker()
 	metricsMetrics := metrics.GetPrometheusInstance(dataStore)
-	modelScanner := scanner.GetInstance(ctx, dataStore, broker, playlistsPlaylists, metricsMetrics)
+	modelScanner := scanner.GetInstance(ctx, dataStore, broker, metricsMetrics)
 	watcher := scanner.GetWatcher(dataStore, modelScanner)
 	manager := plugins.GetManager(dataStore, broker, metricsMetrics)
 	library := core.NewLibrary(dataStore, modelScanner, watcher, broker, manager)
@@ -106,7 +106,7 @@ func CreateSubsonicAPIRouter(ctx context.Context) *subsonic.Router {
 	provider := external.NewProvider(dataStore, agentsAgents, matcherMatcher, broker)
 	uploader := artwork.NewUploader(dataStore)
 	playlistsPlaylists := playlists.NewPlaylists(dataStore, uploader)
-	modelScanner := scanner.GetInstance(ctx, dataStore, broker, playlistsPlaylists, metricsMetrics)
+	modelScanner := scanner.GetInstance(ctx, dataStore, broker, metricsMetrics)
 	playTracker := scrobbler.GetPlayTracker(dataStore, broker, manager)
 	playbackServer := playback.GetInstance(dataStore)
 	lyricsLyrics := lyrics.NewLyrics(dataStore, manager)
@@ -204,10 +204,8 @@ func CreateScanner(ctx context.Context) model.Scanner {
 	sqlDB := db.Db()
 	dataStore := persistence.New(sqlDB)
 	broker := events.GetBroker()
-	uploader := artwork.NewUploader(dataStore)
-	playlistsPlaylists := playlists.NewPlaylists(dataStore, uploader)
 	metricsMetrics := metrics.GetPrometheusInstance(dataStore)
-	modelScanner := scanner.GetInstance(ctx, dataStore, broker, playlistsPlaylists, metricsMetrics)
+	modelScanner := scanner.GetInstance(ctx, dataStore, broker, metricsMetrics)
 	return modelScanner
 }
 
@@ -215,10 +213,8 @@ func CreateScanWatcher(ctx context.Context) scanner.Watcher {
 	sqlDB := db.Db()
 	dataStore := persistence.New(sqlDB)
 	broker := events.GetBroker()
-	uploader := artwork.NewUploader(dataStore)
-	playlistsPlaylists := playlists.NewPlaylists(dataStore, uploader)
 	metricsMetrics := metrics.GetPrometheusInstance(dataStore)
-	modelScanner := scanner.GetInstance(ctx, dataStore, broker, playlistsPlaylists, metricsMetrics)
+	modelScanner := scanner.GetInstance(ctx, dataStore, broker, metricsMetrics)
 	watcher := scanner.GetWatcher(dataStore, modelScanner)
 	return watcher
 }

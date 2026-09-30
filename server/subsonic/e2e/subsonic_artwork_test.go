@@ -111,8 +111,7 @@ var _ = Describe("Artwork Serving", Ordered, func() {
 		Expect(ds.Library().Put(ctx, &artLib)).To(Succeed())
 		Expect(ds.User().SetUserLibraries(ctx, adminUser.ID, []int{artLib.ID})).To(Succeed())
 
-		s := scanner.New(ctx, ds, events.NoopBroker(),
-			playlists.NewPlaylists(ds, artwork.NewUploader(ds)), metrics.NewNoopInstance())
+		s := scanner.New(ctx, ds, events.NoopBroker(), metrics.NewNoopInstance())
 		_, err := s.ScanAll(ctx, true)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -251,8 +250,7 @@ var _ = Describe("Artwork Serving", Ordered, func() {
 // buildArtworkRouter mirrors setupTestDB's Subsonic wiring but with the real artwork.Artwork.
 func buildArtworkRouter(art artwork.Artwork) *subsonic.Router {
 	decider := stream.NewTranscodeDecider(ds, harness.NoopFFmpeg{})
-	s := scanner.New(ctx, ds, events.NoopBroker(),
-		playlists.NewPlaylists(ds, artwork.NewUploader(ds)), metrics.NewNoopInstance())
+	s := scanner.New(ctx, ds, events.NoopBroker(), metrics.NewNoopInstance())
 	return subsonic.New(
 		ds, art, streamerSpy, noopArchiver{}, core.NewPlayers(ds), noopProvider{}, s,
 		events.NoopBroker(), playlists.NewPlaylists(ds, artwork.NewUploader(ds)),

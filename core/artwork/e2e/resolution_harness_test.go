@@ -24,7 +24,6 @@ import (
 	"github.com/navidrome/navidrome/core/agents"
 	"github.com/navidrome/navidrome/core/artwork"
 	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/core/storage/storagetest"
 	"github.com/navidrome/navidrome/db"
 	"github.com/navidrome/navidrome/model"
@@ -131,8 +130,7 @@ func setLayout(files fstest.MapFS) {
 
 func scan() {
 	GinkgoHelper()
-	s := scanner.New(rctx, rds, events.NoopBroker(),
-		playlists.NewPlaylists(rds, artwork.NewUploader(rds)), metrics.NewNoopInstance())
+	s := scanner.New(rctx, rds, events.NoopBroker(), metrics.NewNoopInstance())
 	_, err := s.ScanAll(rctx, true)
 	Expect(err).ToNot(HaveOccurred())
 }

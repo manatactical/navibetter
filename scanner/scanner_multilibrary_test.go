@@ -11,9 +11,7 @@ import (
 	"github.com/navidrome/navidrome/conf"
 	"github.com/navidrome/navidrome/conf/configtest"
 	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/artwork"
 	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/core/storage/storagetest"
 	"github.com/navidrome/navidrome/db"
 	"github.com/navidrome/navidrome/log"
@@ -77,8 +75,7 @@ var _ = Describe("Scanner - Multi-Library", Ordered, func() {
 		}
 		Expect(ds.User().Put(ctx, &adminUser)).To(Succeed())
 
-		s = scanner.New(ctx, ds, events.NoopBroker(),
-			playlists.NewPlaylists(ds, artwork.NewUploader(ds)), metrics.NewNoopInstance())
+		s = scanner.New(ctx, ds, events.NoopBroker(), metrics.NewNoopInstance())
 
 		// Create two test libraries (let DB auto-assign IDs)
 		lib1 = model.Library{Name: "Rock Collection", Path: "rock:///music"}

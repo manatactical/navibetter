@@ -13,9 +13,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/navidrome/navidrome/conf"
 	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/core/artwork"
 	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/core/storage/storagetest"
 	"github.com/navidrome/navidrome/db"
 	"github.com/navidrome/navidrome/log"
@@ -274,8 +272,7 @@ var _ = BeforeSuite(func() {
 	ctx = request.WithUser(GinkgoT().Context(), adminUser)
 
 	buildTestFS()
-	s := scanner.New(ctx, initDS, events.NoopBroker(),
-		playlists.NewPlaylists(initDS, artwork.NewUploader(initDS)), metrics.NewNoopInstance())
+	s := scanner.New(ctx, initDS, events.NoopBroker(), metrics.NewNoopInstance())
 	_, err = s.ScanAll(ctx, true)
 	Expect(err).ToNot(HaveOccurred())
 

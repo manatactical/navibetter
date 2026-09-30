@@ -14,14 +14,8 @@ flowchart TD
         Scanner --> Phase1[Phase 1: Folders Scan]
         Phase1 --> Phase2[Phase 2: Missing Tracks]
         
-        Phase2 --> ParallelPhases
-        
-        subgraph ParallelPhases["Parallel Execution"]
-            Phase3[Phase 3: Refresh Albums]
-            Phase4[Phase 4: Playlist Import]
-        end
-        
-        ParallelPhases --> FinalSteps[Final Steps: GC + Stats]
+        Phase2 --> Phase3[Phase 3: Refresh Albums]
+        Phase3 --> FinalSteps[Final Steps: GC + Stats]
     end
     
     %% Triggers that can initiate a scan
@@ -38,7 +32,7 @@ flowchart TD
     Scanner -.->|Alternative| External[External Scanner Process]
 ```
 
-The execution flow shows that Phases 1 and 2 run sequentially, while Phases 3 and 4 execute in parallel to maximize performance before the final processing steps.
+The execution flow shows that Phases 1, 2 and 3 run sequentially before the final processing steps.
 
 ## Core Components
 
@@ -270,48 +264,9 @@ flowchart TD
     - Updates artist play counts
     - Maintains consistency between related entities
 
-### Phase 4: Playlist Import (`phase_4_playlists.go`)
-
-This phase imports and updates playlists from the file system.
-
-```mermaid
-flowchart TD
-    A[Start Phase 4] --> B{AutoImportPlaylists?}
-    B -- No --> C[Skip]
-    B -- Yes --> D{Admin User Exists?}
-    D -- No --> E[Log Warning & Skip]
-    D -- Yes --> F[Load Folders with Playlists]
-    F --> G{For Each Folder}
-    G --> H[Read Directory]
-    H --> I{For Each Playlist}
-    I --> J[Import Playlist]
-    J --> K[Pre-cache Artwork]
-    K --> L[End Phase 4]
-    C --> L
-    E --> L
-```
-
-**Technical implementation details:**
-
-1. **Playlist Discovery**
-    - Loads folders known to contain playlists
-    - Focuses on folders that have been touched in previous phases
-    - Handles both playlist formats (M3U, NSP)
-
-2. **Import Process**
-    - Uses the core.Playlists service for import
-    - Handles both regular and smart playlists
-    - Updates existing playlists when changed
-    - Pre-caches playlist cover art
-
-3. **Configuration Awareness**
-    - Respects the AutoImportPlaylists setting
-    - Requires an admin user for playlist import
-    - Logs appropriate messages for configuration issues
-
 ## Final Processing Steps
 
-After the four main phases, several finalization steps occur:
+After the main phases, several finalization steps occur:
 
 1. **Garbage Collection**
     - Removes dangling tracks with no files
@@ -405,8 +360,7 @@ Several strategies minimize memory usage:
 The scanner implements a sophisticated concurrency model to optimize performance:
 
 1. **Phase-Level Parallelism**:
-    - Phases 1 and 2 run sequentially due to their dependencies
-    - Phases 3 and 4 run in parallel using the `chain.RunParallel()` function
+    - Phases 1, 2 and 3 run sequentially due to their dependencies
     - Final steps run sequentially to ensure data consistency
 
 2. **Within-Phase Concurrency**:
@@ -443,7 +397,6 @@ The scanner's behavior can be customized through several configuration settings 
 | Setting                     | Description                                              | Default |
 |-----------------------------|----------------------------------------------------------|---------|
 | `PlaylistsPath`             | Path(s) to search for playlists (supports glob patterns) | ""      |
-| `AutoImportPlaylists`       | Whether to import playlists during scanning              | true    |
 
 ### Performance Options
 

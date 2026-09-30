@@ -63,7 +63,6 @@ type configOptions struct {
 	ImageCacheSize                  string
 	AlbumPlayCountMode              string
 	EnableArtworkPrecache           bool
-	AutoImportPlaylists             bool
 	DefaultPlaylistPublicVisibility bool
 	PlaylistsPath                   string
 	SmartPlaylistRefreshDelay       time.Duration
@@ -993,7 +992,6 @@ func setViperDefaults() {
 	viper.SetDefault("imagecachesize", "100MB")
 	viper.SetDefault("albumplaycountmode", consts.AlbumPlayCountModeAbsolute)
 	viper.SetDefault("enableartworkprecache", true)
-	viper.SetDefault("autoimportplaylists", true)
 	viper.SetDefault("defaultplaylistpublicvisibility", false)
 	viper.SetDefault("playlistspath", "")
 	viper.SetDefault("smartPlaylistRefreshDelay", consts.DefaultSmartRefresh)

@@ -13,11 +13,9 @@ import (
 	"testing/fstest"
 
 	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/artwork"
 	"github.com/navidrome/navidrome/core/auth"
 	"github.com/navidrome/navidrome/core/ffmpeg"
 	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/core/storage/storagetest"
 	"github.com/navidrome/navidrome/core/stream"
 	"github.com/navidrome/navidrome/db"
@@ -73,8 +71,7 @@ func SetupDB(ctx context.Context, users ...*model.User) *DB {
 		u.Libraries = loaded.Libraries
 	}
 
-	s := scanner.New(ctx, ds, events.NoopBroker(),
-		playlists.NewPlaylists(ds, artwork.NewUploader(ds)), metrics.NewNoopInstance())
+	s := scanner.New(ctx, ds, events.NoopBroker(), metrics.NewNoopInstance())
 	_, err := s.ScanAll(ctx, true)
 	Expect(err).ToNot(HaveOccurred())
 

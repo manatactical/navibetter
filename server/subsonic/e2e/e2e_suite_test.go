@@ -412,8 +412,7 @@ func setupTestDB() {
 	// Create the Subsonic Router with real DS, streamer spy, and real Decider
 	streamerSpy = &harness.SpyStreamer{}
 	decider := stream.NewTranscodeDecider(ds, harness.NoopFFmpeg{})
-	s := scanner.New(ctx, ds, events.NoopBroker(),
-		playlists.NewPlaylists(ds, artwork.NewUploader(ds)), metrics.NewNoopInstance())
+	s := scanner.New(ctx, ds, events.NoopBroker(), metrics.NewNoopInstance())
 	router = subsonic.New(
 		ds,
 		noopArtwork{},

@@ -12,7 +12,6 @@ import (
 	ppl "github.com/google/go-pipeline/pkg/pipeline"
 	"github.com/navidrome/navidrome/conf"
 	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/log"
 	"github.com/navidrome/navidrome/model"
 	"github.com/navidrome/navidrome/utils/run"
@@ -20,8 +19,7 @@ import (
 )
 
 type scannerImpl struct {
-	ds  model.DataStore
-	pls playlists.Playlists
+	ds model.DataStore
 }
 
 // scanState holds the state of an in-progress scan, to be passed to the various phases
@@ -165,14 +163,8 @@ func (s *scannerImpl) scanFolders(ctx context.Context, fullScan bool, targets []
 		// Phase 2: Process missing files, checking for moves
 		runPhase[*missingTracks](ctx, 2, createPhaseMissingTracks(ctx, &state, s.ds)),
 
-		// Phases 3 and 4 can be run in parallel
-		run.Parallel(
-			// Phase 3: Refresh all new/changed albums and update artists
-			runPhase[*model.Album](ctx, 3, createPhaseRefreshAlbums(ctx, &state, s.ds)),
-
-			// Phase 4: Import/update playlists
-			runPhase[*model.Folder](ctx, 4, createPhasePlaylists(ctx, &state, s.ds, s.pls)),
-		),
+		// Phase 3: Refresh all new/changed albums and update artists
+		runPhase[*model.Album](ctx, 3, createPhaseRefreshAlbums(ctx, &state, s.ds)),
 
 		// Final Steps (cannot be parallelized):
 

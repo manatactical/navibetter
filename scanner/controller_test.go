@@ -5,9 +5,7 @@ import (
 
 	"github.com/navidrome/navidrome/conf/configtest"
 	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/artwork"
 	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/db"
 	"github.com/navidrome/navidrome/model"
 	"github.com/navidrome/navidrome/persistence"
@@ -31,7 +29,7 @@ var _ = Describe("Controller", func() {
 			DeferCleanup(configtest.SetupConfig())
 			ds = &tests.MockDataStore{RealDS: persistence.New(db.Db())}
 			ds.MockedProperty = &tests.MockedPropertyRepo{}
-			ctrl = scanner.New(ctx, ds, events.NoopBroker(), playlists.NewPlaylists(ds, artwork.NewUploader(ds)), metrics.NewNoopInstance())
+			ctrl = scanner.New(ctx, ds, events.NoopBroker(), metrics.NewNoopInstance())
 		})
 
 		It("includes last scan error", func() {
@@ -96,9 +94,8 @@ var _ = Describe("EffectiveFullScan", func() {
 var _ = Describe("GetInstance", func() {
 	It("returns the same controller to every caller", func() {
 		ds := &tests.MockDataStore{}
-		pls := playlists.NewPlaylists(ds, artwork.NewUploader(ds))
-		a := scanner.GetInstance(context.Background(), ds, events.NoopBroker(), pls, metrics.NewNoopInstance())
-		b := scanner.GetInstance(context.Background(), ds, events.NoopBroker(), pls, metrics.NewNoopInstance())
+		a := scanner.GetInstance(context.Background(), ds, events.NoopBroker(), metrics.NewNoopInstance())
+		b := scanner.GetInstance(context.Background(), ds, events.NoopBroker(), metrics.NewNoopInstance())
 		Expect(a).To(BeIdenticalTo(b))
 	})
 })

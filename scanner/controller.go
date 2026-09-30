@@ -13,7 +13,6 @@ import (
 	"github.com/navidrome/navidrome/consts"
 	"github.com/navidrome/navidrome/core/auth"
 	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/db"
 	"github.com/navidrome/navidrome/log"
 	"github.com/navidrome/navidrome/model"
@@ -29,12 +28,11 @@ var (
 )
 
 func New(rootCtx context.Context, ds model.DataStore, broker events.Broker,
-	pls playlists.Playlists, m metrics.Metrics) model.Scanner {
+	m metrics.Metrics) model.Scanner {
 	c := &controller{
 		rootCtx:            rootCtx,
 		ds:                 ds,
 		broker:             broker,
-		pls:                pls,
 		metrics:            m,
 		devExternalScanner: conf.Server.DevExternalScanner,
 	}
@@ -48,13 +46,13 @@ func (s *controller) getScanner() scanner {
 	if s.devExternalScanner {
 		return &scannerExternal{}
 	}
-	return &scannerImpl{ds: s.ds, pls: s.pls}
+	return &scannerImpl{ds: s.ds}
 }
 
 // CallScan starts an in-process scan of specific library/folder pairs.
 // If targets is empty, it scans all libraries.
 // This is meant to be called from the command line (see cmd/scan.go).
-func CallScan(ctx context.Context, ds model.DataStore, pls playlists.Playlists, fullScan bool, targets []model.ScanTarget) (<-chan *ProgressInfo, error) {
+func CallScan(ctx context.Context, ds model.DataStore, fullScan bool, targets []model.ScanTarget) (<-chan *ProgressInfo, error) {
 	release, err := lockScan(ctx)
 	if err != nil {
 		return nil, err
@@ -65,7 +63,7 @@ func CallScan(ctx context.Context, ds model.DataStore, pls playlists.Playlists, 
 	progress := make(chan *ProgressInfo, 100)
 	go func() {
 		defer close(progress)
-		scanner := &scannerImpl{ds: ds, pls: pls}
+		scanner := &scannerImpl{ds: ds}
 		scanner.scanFolders(ctx, fullScan, targets, progress)
 	}()
 	return progress, nil
@@ -98,7 +96,6 @@ type controller struct {
 	ds                 model.DataStore
 	broker             events.Broker
 	metrics            metrics.Metrics
-	pls                playlists.Playlists
 	limiter            *rate.Sometimes
 	devExternalScanner bool
 	count              atomic.Uint32
@@ -392,8 +389,8 @@ func (s *controller) sendMessage(ctx context.Context, status *events.ScanStatus)
 // GetInstance returns the scanner singleton: Status reads the progress counters of the controller
 // running the scan, and scheduler, watcher and signal scans do not start from the API's injector.
 func GetInstance(rootCtx context.Context, ds model.DataStore, broker events.Broker,
-	pls playlists.Playlists, m metrics.Metrics) model.Scanner {
+	m metrics.Metrics) model.Scanner {
 	return singleton.GetInstance(func() *controller {
-		return New(rootCtx, ds, broker, pls, m).(*controller)
+		return New(rootCtx, ds, broker, m).(*controller)
 	})
 }

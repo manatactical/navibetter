@@ -9,8 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/core/playlists"
 	"github.com/navidrome/navidrome/db"
 	"github.com/navidrome/navidrome/log"
 	"github.com/navidrome/navidrome/model"
@@ -82,7 +80,6 @@ func runScanner(ctx context.Context) {
 	sqlDB := db.Db()
 	defer db.Db().Close()
 	ds := persistence.New(sqlDB)
-	pls := playlists.NewPlaylists(ds, artwork.NewUploader(ds))
 
 	// Parse targets from command line or file
 	var scanTargets []model.ScanTarget
@@ -112,7 +109,7 @@ func runScanner(ctx context.Context) {
 		}
 	}
 
-	progress, err := scanner.CallScan(ctx, ds, pls, fullScan, scanTargets)
+	progress, err := scanner.CallScan(ctx, ds, fullScan, scanTargets)
 	if err != nil {
 		log.Fatal(ctx, "Failed to scan", err)
 	}
